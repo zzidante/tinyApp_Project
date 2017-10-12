@@ -2,3 +2,40 @@
   <h1>Welcome to TinyApp!</h1>
   <h3>Your compact app for compact URLs</h3>
 </div>
+
+
+<div class = "form">
+
+  <form method=POST action="/login">
+    <% if (username === 'undefined') { %>
+        <label for="username">Please Login</label>
+        <input name="username" type="text" placeholder="username"/>
+        <input type="submit" value="SUBMIT">
+    <% } else { %>
+        <label for="login">Hey! Welcome <%= username %>.</label>
+        <form method="POST" action="/urls/logout">
+        <button type=submit>logout</button>
+        </form>
+        <% } %>
+
+</form>
+
+
+ <!-- add to template Vars space, the user to template vars. Add to TEPLATE VARS -->
+
+
+
+
+ <html lang="en">
+    <head> 
+    <h1>
+        TINY APP YO
+    </h1>
+    </head>
+    
+    <body>
+       
+    
+    </body>
+    
+    </html>

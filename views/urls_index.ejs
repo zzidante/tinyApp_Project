@@ -6,21 +6,24 @@
   </head>
   <body>
     <header>
-      <% include ./partials/_header %>
+      <% include partials/_header %>
     </header>
     <ul>
       <div class = "url-table">
         <% for(var url in urls) { %>             
           <li>
             <form method="POST" action="/urls/<%= url %>/delete">
-               <%= url %> - <%= urls[url] %>
+               <p><%= url %> - <%= urls[url] %> </p>
+               <a href="/urls/<%= url %>">Update</a>
               <input type="submit" value="DELETE"> 
-            </form> 
+            </form>
           </li>
         <% }; %>
       </ul>
     </div>
-    <a href = "/urls/new">Shorten Your Link Here!</a>
+
+
+    <a href = "/urls/new">Shorten A New Link Here!</a>
 
     <p>&copy; 2017 - Melody Dante and the Mobverse</p>
   </body>
