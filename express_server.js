@@ -12,7 +12,20 @@ app.use(cookieParser());
 
   // database
 
-const urlDatabase = {
+const users = { 
+  "userRandomID": {
+    id: "userRandomID", 
+    email: "user@example.com", 
+    password: "purple-monkey-dinosaur"
+  },
+  "user2RandomID": {
+    id: "user2RandomID", 
+    email: "user2@example.com", 
+    password: "dishwasher-funk"
+  }
+};
+
+  const urlDatabase = {
   "b2xVn2": "http://www.lighthouselabs.ca",
   "9sm5xK": "http://www.google.ca",
   "77h3fP": "http://www.gupmusic.com"
@@ -48,7 +61,7 @@ app.get("/", (request, response) => {           // We render "Hello!" when root 
 });
 
 
-// // SHORT URL REQUESTS TO ORIGINAL LONG URL ************************
+     // SHORT URL REQUESTS TO ORIGINAL LONG URL ************************
 
 app.get("/u/:shortURL", (request, response) => {
   let shortURLKey = request.params.shortURL;    // Grab the params from URL path and give it it's own variable.
@@ -77,6 +90,12 @@ app.get("/urls/new", (request, response) => {
   response.render("urls_new");
 });
 
+    // Register Page ************************
+
+app.get("/register", (request, response) => {
+  response.render("urls_register");
+});
+
 
     // GRAB VALUE FROM NEW SHORT URL PAGE AND USE IN urls_show EJS FILE ************************
 
@@ -88,6 +107,25 @@ app.get("/urls/:id", (request, response) => {
   let templateVars = { "shortURLKey": shortURLKey, "longURL": longURL };
   response.render("urls_show", templateVars);
 });
+
+// Register A User ************************
+
+app.post("/register", (request, response) => {
+  let email = request.body.email;          // grab email from form name.
+  let password = request.body.password;   // grab password from form name.
+  let randomId =  generateURL();          // this will be USER ID
+
+  let newUser = {
+    id: randomId,
+    email: email,
+    password: password
+  };
+
+  users[randomId] = newUser;
+
+  response.redirect("urls/");
+});
+
 
 
 // LOGOUT/ CLEAR COOKIE and REDIRECT TO /URLS  ************************
