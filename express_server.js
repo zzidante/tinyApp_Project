@@ -222,7 +222,7 @@ app.post("/register", (request, response) => {
 
 app.post("/urls/logout", (request, response) => {  
     response.clearCookie("user_id");
-    response.redirect("login/");
+    response.redirect("/login");
   });
 
 

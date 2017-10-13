@@ -7,14 +7,17 @@
   <title>Tiny App</title>
 </head>
 <body>
-  <div class ="welcome-header">
-    <h1>Welcome to TinyApp!</h1>
-    <h3>Your compact app for compact URLs</h3>
-  </div>
+
   
-  <div class = "form">
+  
+
   
   <% if (user === undefined) { %>
+    <div class ="welcome-header">
+      <h1>Welcome to TinyApp!</h1>
+      <h3>Your compact app for compact URLs</h3>
+    </div>
+  <div class = "form">
     <form method=POST action="/login">
       <label for="email">Email</label>
       <input name="email" type="text" placeholder="email"/>
@@ -23,10 +26,12 @@
       <input type="submit" value="SUBMIT">
     </form>
   <% } else { %>
-    <label for="login">Hey! Welcome <%= user.email %>.</label> 
+    <% include partials/_header %>    
+
+    <!-- <label for="login">Hey! Welcome <%= user.email %>.</label> 
     <form method="POST" action="/urls/logout">
       <button type=submit>logout</button>
-    </form>
+    </form> -->
   <% } %>
   
   </div>
