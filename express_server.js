@@ -43,10 +43,27 @@ function generateURL() {
   return shortURL;    // add this later: if this short key is already in the database, run again.  
 };
 
+function giveEmail(email) {
+  for(let user in users) {
+    let currentUser = users[user];
+    if (currentUser.email === email) {
+      return currentUser.email;
+    }; 
+  };
+};
 
+function ifPasswordMatch(password) {
+  for(let user in users) {
+    let currentUser = users[user];
+    if (currentUser.password === password) {
+      return currentUser.password;
+    }; 
+  };
+};
 
-app.use((request, response, next) => {   // runs between every route REQ/RES
-  response.locals.username = request.cookies["username"];
+app.use((request, response, next) => {                        // runs between every route REQ/RES
+  var user = users[request.cookies.user_id];
+  response.locals.user = user;
   return next();
 }); 
 
@@ -79,7 +96,7 @@ app.get("/urls.json", (request, response) => {  //
   // URLS FORM PAGE FROM urls_index EJS ************************
 
 app.get("/urls", (request, response) => {
-  let templateVars = { "urls": urlDatabase } ;
+  let templateVars = { "urls": urlDatabase };
   response.render("urls_index", templateVars);
 });
   
@@ -97,33 +114,65 @@ app.get("/register", (request, response) => {
 });
 
 
+    // Login Page ************************
+
+app.get("/login", (request, response) => {
+  response.render("urls_login");
+});
+
+
     // GRAB VALUE FROM NEW SHORT URL PAGE AND USE IN urls_show EJS FILE ************************
 
 app.get("/urls/:id", (request, response) => {
   const shortURLKey = request.params.id;
   const longURL = urlDatabase[shortURLKey];
-  // const username = request.cookie["username"];
   
   let templateVars = { "shortURLKey": shortURLKey, "longURL": longURL };
   response.render("urls_show", templateVars);
 });
 
+
+// Login A User ************************
+
+app.post("/login", (request, response) => {
+  let email = request.body.email.trim();          // grab email from form name.
+  let password = request.body.password;   // grab password from form name.
+
+
+  if (email === "" || password === "" ) {
+    return response.status(400).send("Fields can't be blank."); 
+  } else {
+    if (email === giveEmail(email) && password === ifPasswordMatch(password)) { // CHANGE SO PASS AUTHENT's ON SAME EMAIL USER
+      response.cookie("user_id", users.user_id);
+      response.redirect("/");
+    } else {
+      return response.status(403).send("Authentification error."); 
+    };
+  };
+});
+
 // Register A User ************************
 
 app.post("/register", (request, response) => {
-  let email = request.body.email;          // grab email from form name.
+  let email = request.body.email.trim();          // grab email from form name.
   let password = request.body.password;   // grab password from form name.
   let randomId =  generateURL();          // this will be USER ID
 
-  let newUser = {
-    id: randomId,
-    email: email,
-    password: password
-  };
-
-  users[randomId] = newUser;
-
-  response.redirect("urls/");
+  if (email === "" || password === "" ) {
+    response.status(400).send("Fields can't be blank."); 
+  } else if (giveEmail(email)) {
+    response.status(400).send("Email must be unique.");   
+  } else {
+    let newUser = {
+      id: randomId,
+      email: email,
+      password: password
+    };
+    
+    users[randomId] = newUser;
+    response.cookie("user_id", randomId);
+    response.redirect("urls/");
+  }
 });
 
 
@@ -132,7 +181,7 @@ app.post("/register", (request, response) => {
 
 app.post("/logout", (request, response) => {
   
-    response.clearCookie(request.body.username);
+    response.clearCookie(request.body.user_id);
     response.redirect("urls/");
   })
 
@@ -186,4 +235,3 @@ app.post("/urls/:id/delete", (request, response) => {
 app.listen(PORT, () => {
   console.log(`Example app listening on port ${PORT}!`);
 });
-

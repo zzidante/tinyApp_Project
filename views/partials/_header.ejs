@@ -6,19 +6,23 @@
 
 <div class = "form">
 
-  <form method=POST action="/login">
-    <% if (username === 'undefined') { %>
-        <label for="username">Please Login</label>
-        <input name="username" type="text" placeholder="username"/>
-        <input type="submit" value="SUBMIT">
-    <% } else { %>
-        <label for="login">Hey! Welcome <%= username %>.</label>
-        <form method="POST" action="/urls/logout">
-        <button type=submit>logout</button>
-        </form>
-        <% } %>
+  <% if (user === undefined) { %> 
+    <a href="/login">Login First!</a>
+    <a href="/register">Register Here!</a>
+  <% } else { %>
+    <label for="login">Hey! Welcome <%= user.email %>.</label> 
+    <form method="POST" action="/urls/logout">
+      <button type=submit>logout</button>
+    </form>
+  <% } %>
 
-</form>
+</div>
+
 
 
  <!-- add to template Vars space, the user to template vars. Add to TEPLATE VARS -->
+ <!-- <form method=POST action="/login">
+  <label for="username">Please Login</label>
+  <input name="username" type="text" placeholder="username"/>
+  <input type="submit" value="SUBMIT">
+</form> -->
