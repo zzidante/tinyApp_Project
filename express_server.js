@@ -62,11 +62,21 @@ function isRightUserGiveId(email, password) {
   };
 };
 
+function authenticateUserPassword(email, password) {
+  for(let user in users) {
+    let currentUser = users[user];
+    if (currentUser.email === email) {
+      if (currentUser.password === password);
+      return currentUser.password;
+    }; 
+  };
+};
+
 function loginResponse(email, password, response) {
   if (email === "" || password === "" ) {
     return response.status(400).send("Fields can't be blank."); 
   } else {
-    if (isRightUserGiveId(email, password)) { // CHANGE SO PASS AUTHENT's ON SAME EMAIL USER
+    if (authenticateUserPassword(email, password) === password) { 
       response.cookie("user_id", isRightUserGiveId(email, password));
       return response.redirect("/");
     } else {
