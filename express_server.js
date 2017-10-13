@@ -52,14 +52,29 @@ function giveEmail(email) {
   };
 };
 
-function ifPasswordMatch(password) {
+function isRightUserGiveId(email, password) {
   for(let user in users) {
     let currentUser = users[user];
-    if (currentUser.password === password) {
-      return currentUser.password;
+    if (currentUser.email === email) {
+      if (currentUser.password === password);
+      return currentUser.id;
     }; 
   };
 };
+
+function loginResponse(email, password, response) {
+  if (email === "" || password === "" ) {
+    return response.status(400).send("Fields can't be blank."); 
+  } else {
+    if (isRightUserGiveId(email, password)) { // CHANGE SO PASS AUTHENT's ON SAME EMAIL USER
+      response.cookie("user_id", isRightUserGiveId(email, password));
+      return response.redirect("/");
+    } else {
+      return response.status(403).send("Authentification error."); 
+    };
+  };
+};
+
 
 app.use((request, response, next) => {                        // runs between every route REQ/RES
   var user = users[request.cookies.user_id];
@@ -138,17 +153,7 @@ app.post("/login", (request, response) => {
   let email = request.body.email.trim();          // grab email from form name.
   let password = request.body.password;   // grab password from form name.
 
-
-  if (email === "" || password === "" ) {
-    return response.status(400).send("Fields can't be blank."); 
-  } else {
-    if (email === giveEmail(email) && password === ifPasswordMatch(password)) { // CHANGE SO PASS AUTHENT's ON SAME EMAIL USER
-      response.cookie("user_id", users.user_id);
-      response.redirect("/");
-    } else {
-      return response.status(403).send("Authentification error."); 
-    };
-  };
+    loginResponse(email, password, response); 
 });
 
 // Register A User ************************
@@ -179,11 +184,11 @@ app.post("/register", (request, response) => {
 
 // LOGOUT/ CLEAR COOKIE and REDIRECT TO /URLS  ************************
 
-app.post("/logout", (request, response) => {
+app.post("/urls/logout", (request, response) => {
   
-    response.clearCookie(request.body.user_id);
-    response.redirect("urls/");
-  })
+    response.clearCookie("user_id");
+    response.redirect("login/");
+  });
 
 
 // GENERATE SHORT URL AND SEND TO DATABASE THEN REDIRECT TO URLS/NEW SHORT URL ************************
@@ -196,18 +201,7 @@ app.post("/urls", (request, response) => {
   response.redirect("urls/" + generateShortURL);
 });
 
-// TAKE USERNAME FROM FORM SUBMISSION + SET COOKIE ************************
 
-
-app.post("/login", (request, response) => {
-  let currentUser = request.body.username;   // grab username from form name.
-  response.cookie('username', currentUser);        // set cookie to username
-  response.redirect("urls/");                 // redirect to urls
-
-// use endpoint to set cookie parameter called cookie to val of username in form (req.body)
-// after set cookie, redirect to /urls page.
-
-});
 
 
   // UPDATE ENTRIES RESOURCE on Update Button in urls_show ************************
