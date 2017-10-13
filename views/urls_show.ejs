@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <title>TinyApp</title>
   </head>
+
   <body>
     <header>
       <% include partials/_header %>
@@ -12,18 +13,18 @@
       <h1>Urls</h1>
         <p>Your shortened URL is: <%= shortURLKey %></p>
         <p>Your original URL is: <%= longURL %></p>
-    <div></div>
+      <div></div>
 
-    <h2>UPDATE YOUR LINK</h2>
+      <h2>UPDATE YOUR LINK</h2>
 
-    <form method="POST" action="/urls/<%= shortURLKey %>/update">
-      <label for="longURL">Long URL</label>
-      <input type="text" name="longURL"/>
-      <input type="submit" value="UPDATE">
-    </form>
-    <br>
-    <a href = "/urls">Edit Current Links</a>
-    <br>
-    <p>&copy; 2017 - Melody Dante and the Mobverse</p>
+      <form method="POST" action="/urls/<%= shortURLKey %>/update">
+        <label for="longURL">Long URL</label>
+        <input type="text" name="longURL"/>
+        <input type="submit" value="UPDATE">
+      </form>
+      <div></div>
+      <a href = "/urls">Edit Current Links</a>
+      <div></div>
+      <% include partials/_footer %>      
   </body>
 </html>

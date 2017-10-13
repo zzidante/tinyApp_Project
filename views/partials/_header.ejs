@@ -7,12 +7,12 @@
 <div class = "form">
 
   <% if (user === undefined) { %> 
-    <a href="/login">Login First!</a>
+    <a href="/login">Login First!</a> <span> |  | </span>
     <a href="/register">Register Here!</a>
   <% } else { %>
     <label for="login">Hey! Welcome <%= user.email %>.</label> 
     <form method="POST" action="/urls/logout">
-      <button type=submit>logout</button>
+      <button type=submit>Logout</button>
     </form>
   <% } %>
 
