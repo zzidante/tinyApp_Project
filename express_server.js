@@ -2,15 +2,14 @@ const express = require("express");
 const app = express();
 const PORT = process.env.PORT || 8080;
 const bodyParser = require("body-parser");
-const cookieParser = require('cookie-parser');
-// var cookieSession = require('cookie-session')
+// const cookieParser = require('cookie-parser');
+var cookieSession = require('cookie-session')
 const bcrypt = require('bcrypt');
 
-// var cookieSession = require('cookie-session');
-// app.use(cookieSession({
-//     name: 'session',
-//     keys: ['freebird']
-// }));
+app.use(cookieSession({
+    name: 'session',
+    keys: ['freebird']
+}));
 
   // settings
 
@@ -82,7 +81,6 @@ function giveId(email, password) {
   for(let user in users) {
     let currentUser = users[user];
     if (currentUser.email === email) {
-      if (currentUser.password === password);
       return currentUser.id;
     }; 
   };
@@ -98,20 +96,7 @@ function authenticateUserPassword(email, password) {
   };
 };
 
-function loginRouteResponse(email, password, response) {
-  if (email === "" || password === "" ) {
-    return response.status(400).send("Fields can't be blank."); 
-  } else {
-    if (authenticateUserPassword(email, password) === password) { 
-      response.cookie("user_id", giveId(email, password));
-      return response.redirect("urls"); //CHANGE
-    } else {
-      return response.status(403).send("Authentification error."); 
-    };
-  };
-};
-
-function registerRouteResponse(email, password, randomId, response) {
+function registerRouteResponse(email, password, randomId, response, request) {
   if (email === "" || password === "" ) {
     response.status(400).send("Fields can't be blank."); 
   } else if (giveEmail(email)) {
@@ -124,15 +109,15 @@ function registerRouteResponse(email, password, randomId, response) {
     };
     
     users[randomId] = newUser;
-    response.cookie("user_id", randomId);
+    request.session.user_id = randomId;
     response.redirect("urls");
   };
 };
 
-  //middleware, runs between the route
+  //middleware
 
 app.use((request, response, next) => {                        
-  const user = users[request.cookies.user_id];
+  const user = users[request.session.user_id];
   response.locals.user = user;
   return next();
 }); 
@@ -140,12 +125,9 @@ app.use((request, response, next) => {
 
   // routes
 
-
-    // HOME PAGE ************************
-
 app.get("/", (request, response) => {
   const templateVars = { "urls": urlDatabase };
-  const user_id = request.cookies.user_id;
+  const user_id = request.session.user_id;
 
   if (users[user_id]) {
     response.render("urls_index", templateVars);
@@ -163,7 +145,7 @@ app.get("/urls.json", (request, response) => {  //
     // Register Page ************************
 
 app.get("/register", (request, response) => {
-  const user_id = request.cookies.user_id;
+  const user_id = request.session.user_id;
 
   if (user_id) { 
     response.redirect("urls"); 
@@ -176,7 +158,7 @@ app.get("/register", (request, response) => {
     // Login Page ************************
 
 app.get("/login", (request, response) => {
-  const user_id = request.cookies.user_id;
+  const user_id = request.session.user_id;
 
   if (users[user_id]) { 
     response.redirect("urls"); 
@@ -189,7 +171,7 @@ app.get("/login", (request, response) => {
 // URLS FORM PAGE FROM urls_index EJS ************************
 
 app.get("/urls", (request, response) => {
-  const user_id = request.cookies.user_id;
+  const user_id = request.session.user_id;
   const templateVars = { "urls": getURLsForUser(user_id) };
 
   if (users[user_id]) {
@@ -202,7 +184,7 @@ app.get("/urls", (request, response) => {
     // NEW POST PAGE renders from urls_new EJS ************************
 
 app.get("/urls/new", (request, response) => {
-  const user_id = request.cookies.user_id;
+  const user_id = request.session.user_id;
 
   if (users[user_id]) {
     response.render("urls_new");
@@ -215,7 +197,7 @@ app.get("/urls/new", (request, response) => {
     // GRAB VALUE FROM NEW SHORT URL PAGE AND USE IN urls_show EJS FILE ************************
 
 app.get("/urls/:id", (request, response) => {
-  const user_id = request.cookies.user_id;
+  const user_id = request.session.user_id;
   const shortURLKey = request.params.id;
   const longURL = urlDatabase[shortURLKey];
   const templateVars = { "shortURLKey": shortURLKey, "longURL": longURL };
@@ -231,9 +213,21 @@ app.get("/urls/:id", (request, response) => {
 
 app.get("/u/:shortURL", (request, response) => {
   let shortURLKey = request.params.shortURL;    // Grab the params from URL path and give it it's own variable.
-  let longURL = urlDatabase[shortURLKey].longURL;       // redirect to original URL
+  let longURL = urlDatabase[shortURLKey].longURL;       // redirect to original URL... .longURL
   response.redirect(longURL);
 });
+
+
+function hashPasswordMatch(userId, password) {
+  if (userId) {
+    if(users[userId].password) { 
+      bcrypt.compareSync(password, users[userId].password) 
+    return true;
+    }
+  } else {
+    return false;
+  }
+};
 
 
 // Login A User ************************
@@ -241,20 +235,32 @@ app.get("/u/:shortURL", (request, response) => {
 app.post("/login", (request, response) => {
   const email = request.body.email.trim();          // grab email from form name.
   const password = request.body.password;          // grab password from form name.
+  const userId = giveId(email);
+  const verifyloginCredentials = hashPasswordMatch(userId, password);
 
-  loginRouteResponse(email, password, response); 
+  if (email === "" || password === "" ) {
+    return response.status(400).send("Fields can't be blank."); 
+  } else {
+    if (userId && verifyloginCredentials) { 
+      request.session.user_id = userId;
+      return response.redirect("urls");
+    } else {
+      return response.status(403).send("Authentification error."); 
+    };
+  };
 });
 
 
 // Register A User ************************
 
 app.post("/register", (request, response) => {
-  const email = request.body.email.trim();          // grab email from form name.
-  const password = request.body.password.trim();   // grab password from form name.
-  const randomId =  generateRandomNum();                 // this will be USER ID
-  const user_id = request.cookies.user_id;  // cookie
+  const email = request.body.email.trim();      
+  const password = request.body.password.trim();
+  const hashedPassword = bcrypt.hashSync(password, 10);
+  const randomId =  generateRandomNum();
+  const user_id = request.session.user_id;
   
-  registerRouteResponse(email, password, randomId, response);
+  registerRouteResponse(email, hashedPassword, randomId, response, request);
 });
 
 
@@ -263,7 +269,7 @@ app.post("/register", (request, response) => {
 app.post("/urls", (request, response) => {
   const shortURL = generateRandomNum();  //Give me a random string
   const longURL = request.body.longURL;
-  const user_id = request.cookies.user_id;
+  const user_id = request.session.user_id;
 
   urlDatabase[shortURL] = { userId: user_id, longURL: longURL };
   response.redirect("urls/" + shortURL);
@@ -273,7 +279,7 @@ app.post("/urls", (request, response) => {
   // UPDATE ENTRIES RESOURCE on Update Button in urls_show ************************
 
 app.post("/urls/:id/update", (request, response) => {
-  const user_id = request.cookies.user_id;
+  const user_id = request.session.user_id;
   const shortURLKey = request.params.id;
   const longURL = request.body.longURL;
 
@@ -290,7 +296,8 @@ app.post("/urls/:id/update", (request, response) => {
 // LOGOUT/ CLEAR COOKIE and REDIRECT TO /URLS  ************************
 
 app.post("/urls/logout", (request, response) => {  
-  response.clearCookie("user_id");
+  // response.clearCookie("user_id");
+  request.session = null;
   response.redirect("/urls");
 });
 
@@ -298,7 +305,7 @@ app.post("/urls/logout", (request, response) => {
   // DELETE ENTRIES RESOURCE on Delete Button ************************
 
 app.post("/urls/:id/delete", (request, response) => {
-  const user_id = request.cookies.user_id;
+  const user_id = request.session.user_id;
   const shortURLKey = request.params.id;
 
   if (user_id === urlDatabase[shortURLKey].userId) {
