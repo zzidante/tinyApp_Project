@@ -1,9 +1,10 @@
+  // required NPM libraries
+
 const express = require("express");
 const app = express();
 const PORT = process.env.PORT || 8080;
 const bodyParser = require("body-parser");
-// const cookieParser = require('cookie-parser');
-var cookieSession = require('cookie-session')
+const cookieSession = require('cookie-session');
 const bcrypt = require('bcrypt');
 
 app.use(cookieSession({
@@ -14,12 +15,11 @@ app.use(cookieSession({
   // settings
 
 app.set("view engine", "ejs");
-app.use(bodyParser.urlencoded({extended: true}));  // allows us to access POST request parameters
-// app.use(cookieParser());
+app.use(bodyParser.urlencoded({extended: true}));
 
   // database
 
-const users = { 
+const users = {
   "userRandomID": {
     id: "userRandomID", 
     email: "user@example.com", 
@@ -34,17 +34,17 @@ const users = {
 
 const urlDatabase = {
   "b2xVn2": {
-      userId: "userRandomID",
-      longURL: "http://www.lighthouselabs.ca"
+    userId: "userRandomID",
+    longURL: "http://www.lighthouselabs.ca"
   },
 
   "9sm5xK": {
-      userId: "user2RandomID",
-      longURL: "http://www.google.com"
+    userId: "user2RandomID",
+    longURL: "http://www.google.com"
   }
 };
 
-  // helpers
+  // helper functions
 
 function generateRandomNum() {
   let shortURL = "";
@@ -53,17 +53,18 @@ function generateRandomNum() {
   for (let i = 0; i < 7; i++) {
     shortURL += allowedChar.charAt(Math.floor(Math.random() * allowedChar.length));
   };
-  return shortURL;    // add this later: if this short key is already in the database, run again.  
+  return shortURL;
 };
 
+
 function getURLsForUser(user_id) {
-  const singleURLObj = {}
+  const singleURLObj = {};
   for(let uniqueShortURL in urlDatabase) {
     const currentURL = urlDatabase[uniqueShortURL];
     if(currentURL.userId === user_id) {
       singleURLObj[uniqueShortURL] = currentURL;
     }
-  }
+  };
   return singleURLObj;
 };
 
@@ -73,26 +74,16 @@ function giveEmail(email) {
     let currentUser = users[user];
     if (currentUser.email === email) {
       return currentUser.email;
-    }; 
+    }
   };
 };
 
-function giveId(email, password) {
+function giveId(email) {
   for(let user in users) {
     let currentUser = users[user];
     if (currentUser.email === email) {
       return currentUser.id;
-    }; 
-  };
-};
-
-function authenticateUserPassword(email, password) {
-  for(let user in users) {
-    let currentUser = users[user];
-    if (currentUser.email === email) {
-      if (currentUser.password === password);
-      return currentUser.password;
-    }; 
+    }
   };
 };
 
@@ -105,13 +96,13 @@ function registerRouteResponse(email, password, randomId, response, request) {
     let newUser = {
       id: randomId,
       email: email,
-      password: password
+      hashedPassword: password
     };
     
     users[randomId] = newUser;
     request.session.user_id = randomId;
     response.redirect("urls");
-  };
+  }
 };
 
   //middleware
@@ -136,13 +127,11 @@ app.get("/", (request, response) => {
   };
 });
 
-    // JSON *
 
 app.get("/urls.json", (request, response) => {  // 
   response.json(urlDatabase);
 });
 
-    // Register Page ************************
 
 app.get("/register", (request, response) => {
   const user_id = request.session.user_id;
@@ -155,8 +144,6 @@ app.get("/register", (request, response) => {
 });
 
 
-    // Login Page ************************
-
 app.get("/login", (request, response) => {
   const user_id = request.session.user_id;
 
@@ -167,8 +154,6 @@ app.get("/login", (request, response) => {
   }
 });
 
-
-// URLS FORM PAGE FROM urls_index EJS ************************
 
 app.get("/urls", (request, response) => {
   const user_id = request.session.user_id;
@@ -181,7 +166,6 @@ app.get("/urls", (request, response) => {
   };
 });
 
-    // NEW POST PAGE renders from urls_new EJS ************************
 
 app.get("/urls/new", (request, response) => {
   const user_id = request.session.user_id;
@@ -194,8 +178,6 @@ app.get("/urls/new", (request, response) => {
 });
 
 
-    // GRAB VALUE FROM NEW SHORT URL PAGE AND USE IN urls_show EJS FILE ************************
-
 app.get("/urls/:id", (request, response) => {
   const user_id = request.session.user_id;
   const shortURLKey = request.params.id;
@@ -204,40 +186,33 @@ app.get("/urls/:id", (request, response) => {
 
   if (users[user_id]) {
     response.render("urls_show", templateVars);
-  } else { 
-    return response.status(401).send("You do not have permission to access this resource");   
+  } else {
+    return response.status(401).send("You do not have permission to access this resource");
   };
 });
 
-  // SHORT URL REQUESTS TO ORIGINAL LONG URL ************************
 
 app.get("/u/:shortURL", (request, response) => {
-  let shortURLKey = request.params.shortURL;    // Grab the params from URL path and give it it's own variable.
-  let longURL = urlDatabase[shortURLKey].longURL;       // redirect to original URL... .longURL
+  let shortURLKey = request.params.shortURL;
+  let longURL = urlDatabase[shortURLKey].longURL;
   response.redirect(longURL);
 });
 
 
 function hashPasswordMatch(userId, password) {
-  if (userId) {
-    if(users[userId].password) { 
-      bcrypt.compareSync(password, users[userId].password) 
+  if (bcrypt.compareSync(password, users[userId].hashedPassword)) { 
     return true;
-    }
-  } else {
+  } else {    
     return false;
   }
 };
 
 
-// Login A User ************************
-
 app.post("/login", (request, response) => {
-  const email = request.body.email.trim();          // grab email from form name.
-  const password = request.body.password;          // grab password from form name.
+  const email = request.body.email.trim();
+  const password = request.body.password;
   const userId = giveId(email);
   const verifyloginCredentials = hashPasswordMatch(userId, password);
-
   if (email === "" || password === "" ) {
     return response.status(400).send("Fields can't be blank."); 
   } else {
@@ -250,9 +225,6 @@ app.post("/login", (request, response) => {
   };
 });
 
-
-// Register A User ************************
-
 app.post("/register", (request, response) => {
   const email = request.body.email.trim();      
   const password = request.body.password.trim();
@@ -264,8 +236,6 @@ app.post("/register", (request, response) => {
 });
 
 
-// GENERATE SHORT URL AND SEND TO DATABASE THEN REDIRECT TO URLS/NEW SHORT URL ************************
-
 app.post("/urls", (request, response) => {
   const shortURL = generateRandomNum();  //Give me a random string
   const longURL = request.body.longURL;
@@ -275,8 +245,6 @@ app.post("/urls", (request, response) => {
   response.redirect("urls/" + shortURL);
 });
 
-
-  // UPDATE ENTRIES RESOURCE on Update Button in urls_show ************************
 
 app.post("/urls/:id/update", (request, response) => {
   const user_id = request.session.user_id;
@@ -292,17 +260,12 @@ app.post("/urls/:id/update", (request, response) => {
 });
 
 
-
-// LOGOUT/ CLEAR COOKIE and REDIRECT TO /URLS  ************************
-
 app.post("/urls/logout", (request, response) => {  
   // response.clearCookie("user_id");
   request.session = null;
   response.redirect("/urls");
 });
 
-
-  // DELETE ENTRIES RESOURCE on Delete Button ************************
 
 app.post("/urls/:id/delete", (request, response) => {
   const user_id = request.session.user_id;
@@ -316,8 +279,7 @@ app.post("/urls/:id/delete", (request, response) => {
   }
 });
 
-
-    // SERVER ************************
+    // server
 
 app.listen(PORT, () => {
   console.log(`Example app listening on port ${PORT}!`);
