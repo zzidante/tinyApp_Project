@@ -3,12 +3,20 @@ const app = express();
 const PORT = process.env.PORT || 8080;
 const bodyParser = require("body-parser");
 const cookieParser = require('cookie-parser');
+// var cookieSession = require('cookie-session')
+const bcrypt = require('bcrypt');
+
+// var cookieSession = require('cookie-session');
+// app.use(cookieSession({
+//     name: 'session',
+//     keys: ['freebird']
+// }));
 
   // settings
 
 app.set("view engine", "ejs");
 app.use(bodyParser.urlencoded({extended: true}));  // allows us to access POST request parameters
-app.use(cookieParser());
+// app.use(cookieParser());
 
   // database
 
