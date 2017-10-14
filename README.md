@@ -8,14 +8,14 @@ You create an account and login to create short URLS. These URLS can be shared a
 
 Any URLs you shorten are private to you until you choose to share them.
 
-!["Welcome to Tiny App!"] (https://raw.githubusercontent.com/zzidante/tinyApp_Project/72392cc3635a070bcc2af95309913d7775d2ae09/docs/Enter-a-URL-TinyApp.png)
+!["Welcome to Tiny App!"] (https://github.com/zzidante/tinyApp_Project/blob/master/docs/Enter-a-URL-TinyApp.png)
 
 
-!["Example List!"] (https://raw.githubusercontent.com/zzidante/tinyApp_Project/72392cc3635a070bcc2af95309913d7775d2ae09/docs/Link-List-TinyApp.png)
+!["Example List!"] (https://github.com/zzidante/tinyApp_Project/blob/master/docs/Link-List-TinyApp.png)
 
-!["Login Page!"] (https://raw.githubusercontent.com/zzidante/tinyApp_Project/72392cc3635a070bcc2af95309913d7775d2ae09/docs/Register-Page-TinyApp.png)
+!["Login Page!"] (https://github.com/zzidante/tinyApp_Project/blob/master/docs/Register-Page-TinyApp.png)
 
-!["Shortened a URL!"] (https://raw.githubusercontent.com/zzidante/tinyApp_Project/72392cc3635a070bcc2af95309913d7775d2ae09/docs/Shortened-Url-TinyApp.png)
+!["Shortened a URL!"] (https://github.com/zzidante/tinyApp_Project/blob/master/docs/Shortened-Url-TinyApp.png)
 
 # Dependencies
 
