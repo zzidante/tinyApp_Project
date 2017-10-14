@@ -128,7 +128,7 @@ app.get("/", (request, response) => {
 });
 
 
-app.get("/urls.json", (request, response) => {  // 
+app.get("/urls.json", (request, response) => {
   response.json(urlDatabase);
 });
 
@@ -237,7 +237,7 @@ app.post("/register", (request, response) => {
 
 
 app.post("/urls", (request, response) => {
-  const shortURL = generateRandomNum();  //Give me a random string
+  const shortURL = generateRandomNum();  
   const longURL = request.body.longURL;
   const user_id = request.session.user_id;
 
@@ -252,7 +252,7 @@ app.post("/urls/:id/update", (request, response) => {
   const longURL = request.body.longURL;
 
   if (user_id === urlDatabase[shortURLKey].userId) {
-    urlDatabase[shortURLKey] = { userId: user_id, longURL: longURL }; // oiginal: newLongURL;  
+    urlDatabase[shortURLKey] = { userId: user_id, longURL: longURL };  
     response.redirect("/urls/" + shortURLKey);
   } else {
     return response.status(401).send("You do not have permission to access this resource");     
