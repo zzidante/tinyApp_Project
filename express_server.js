@@ -71,7 +71,7 @@ function getURLsForUser(user_id) {
 
 function giveEmail(email) {
   for(let user in users) {
-    let currentUser = users[user];
+    const currentUser = users[user];
     if (currentUser.email === email) {
       return currentUser.email;
     }
@@ -80,7 +80,7 @@ function giveEmail(email) {
 
 function giveId(email) {
   for(let user in users) {
-    let currentUser = users[user];
+    const currentUser = users[user];
     if (currentUser.email === email) {
       return currentUser.id;
     }
@@ -124,7 +124,7 @@ app.get("/", (request, response) => {
     response.render("urls_index", templateVars);
   } else { 
     response.redirect("/login");
-  };
+  }
 });
 
 
@@ -221,7 +221,7 @@ app.post("/login", (request, response) => {
       return response.redirect("urls");
     } else {
       return response.status(403).send("Authentification error."); 
-    };
+    }
   };
 });
 
