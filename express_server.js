@@ -16,7 +16,7 @@ const users = {
   "userRandomID": {
     id: "userRandomID", 
     email: "user@example.com", 
-    password: "purple-monkey-dinosaur"
+    password: "a"
   },
   "user2RandomID": {
     id: "user2RandomID", 
@@ -25,10 +25,16 @@ const users = {
   }
 };
 
-  const urlDatabase = {
-  "b2xVn2": "http://www.lighthouselabs.ca",
-  "9sm5xK": "http://www.google.ca",
-  "77h3fP": "http://www.gupmusic.com"
+const urlDatabase = {
+  "b2xVn2": {
+      userId: "userRandomID",
+      longURL: "http://www.lighthouselabs.ca"
+  },
+
+  "9sm5xK": {
+      userId: "user2RandomID",
+      longURL: "http://www.google.com"
+  }
 };
 
   // helpers
@@ -41,6 +47,17 @@ function generateRandomNum() {
     shortURL += allowedChar.charAt(Math.floor(Math.random() * allowedChar.length));
   };
   return shortURL;    // add this later: if this short key is already in the database, run again.  
+};
+
+function getURLsForUser(user_id) {
+  const singleURLObj = {}
+  for(let uniqueShortURL in urlDatabase) {
+    const currentURL = urlDatabase[uniqueShortURL];
+    if(currentURL.userId === user_id) {
+      singleURLObj[uniqueShortURL] = currentURL;
+    }
+  }
+  return singleURLObj;
 };
 
 
@@ -79,7 +96,7 @@ function loginRouteResponse(email, password, response) {
   } else {
     if (authenticateUserPassword(email, password) === password) { 
       response.cookie("user_id", giveId(email, password));
-      return response.redirect("/");
+      return response.redirect("urls"); //CHANGE
     } else {
       return response.status(403).send("Authentification error."); 
     };
@@ -100,14 +117,14 @@ function registerRouteResponse(email, password, randomId, response) {
     
     users[randomId] = newUser;
     response.cookie("user_id", randomId);
-    response.redirect("urls/");
+    response.redirect("urls");
   };
 };
 
   //middleware, runs between the route
 
 app.use((request, response, next) => {                        
-  var user = users[request.cookies.user_id];
+  const user = users[request.cookies.user_id];
   response.locals.user = user;
   return next();
 }); 
@@ -129,27 +146,43 @@ app.get("/", (request, response) => {
   };
 });
 
-
-     // SHORT URL REQUESTS TO ORIGINAL LONG URL ************************
-
-app.get("/u/:shortURL", (request, response) => {
-  let shortURLKey = request.params.shortURL;    // Grab the params from URL path and give it it's own variable.
-  let longURL = urlDatabase[shortURLKey];       // redirect to original URL
-  response.redirect(longURL);
-});
-
-
-    // JSON ************************
+    // JSON *
 
 app.get("/urls.json", (request, response) => {  // 
   response.json(urlDatabase);
 });
 
-  // URLS FORM PAGE FROM urls_index EJS ************************
+    // Register Page ************************
+
+app.get("/register", (request, response) => {
+  const user_id = request.cookies.user_id;
+
+  if (user_id) { 
+    response.redirect("urls"); 
+  } else { 
+    response.render("urls_register");
+  }
+});
+
+
+    // Login Page ************************
+
+app.get("/login", (request, response) => {
+  const user_id = request.cookies.user_id;
+
+  if (users[user_id]) { 
+    response.redirect("urls"); 
+  } else { 
+    response.render("urls_login");
+  }
+});
+
+
+// URLS FORM PAGE FROM urls_index EJS ************************
 
 app.get("/urls", (request, response) => {
-  const templateVars = { "urls": urlDatabase };
   const user_id = request.cookies.user_id;
+  const templateVars = { "urls": getURLsForUser(user_id) };
 
   if (users[user_id]) {
     response.render("urls_index", templateVars);
@@ -157,44 +190,41 @@ app.get("/urls", (request, response) => {
     response.redirect("/login");
   };
 });
-  
-
 
     // NEW POST PAGE renders from urls_new EJS ************************
 
 app.get("/urls/new", (request, response) => {
-  const templateVars = { "urls": urlDatabase};
   const user_id = request.cookies.user_id;
 
   if (users[user_id]) {
-    response.render("urls_new", templateVars);
+    response.render("urls_new");
   } else { 
     response.redirect("/login");
   };
-});
-
-    // Register Page ************************
-
-app.get("/register", (request, response) => {
-  response.render("urls_register");
-});
-
-
-    // Login Page ************************
-
-app.get("/login", (request, response) => {
-  response.render("urls_login");
 });
 
 
     // GRAB VALUE FROM NEW SHORT URL PAGE AND USE IN urls_show EJS FILE ************************
 
 app.get("/urls/:id", (request, response) => {
+  const user_id = request.cookies.user_id;
   const shortURLKey = request.params.id;
   const longURL = urlDatabase[shortURLKey];
   const templateVars = { "shortURLKey": shortURLKey, "longURL": longURL };
 
-  response.render("urls_show", templateVars);
+  if (users[user_id]) {
+    response.render("urls_show", templateVars);
+  } else { 
+    return response.status(401).send("You do not have permission to access this resource");   
+  };
+});
+
+  // SHORT URL REQUESTS TO ORIGINAL LONG URL ************************
+
+app.get("/u/:shortURL", (request, response) => {
+  let shortURLKey = request.params.shortURL;    // Grab the params from URL path and give it it's own variable.
+  let longURL = urlDatabase[shortURLKey].longURL;       // redirect to original URL
+  response.redirect(longURL);
 });
 
 
@@ -207,55 +237,68 @@ app.post("/login", (request, response) => {
   loginRouteResponse(email, password, response); 
 });
 
+
 // Register A User ************************
 
 app.post("/register", (request, response) => {
   const email = request.body.email.trim();          // grab email from form name.
   const password = request.body.password.trim();   // grab password from form name.
   const randomId =  generateRandomNum();                 // this will be USER ID
-
+  const user_id = request.cookies.user_id;  // cookie
+  
   registerRouteResponse(email, password, randomId, response);
 });
 
 
-// LOGOUT/ CLEAR COOKIE and REDIRECT TO /URLS  ************************
-
-app.post("/urls/logout", (request, response) => {  
-    response.clearCookie("user_id");
-    response.redirect("/login");
-  });
-
-
 // GENERATE SHORT URL AND SEND TO DATABASE THEN REDIRECT TO URLS/NEW SHORT URL ************************
 
-
 app.post("/urls", (request, response) => {
-  const generateShortURL = generateRandomNum();  //Give me a random string
-  urlDatabase[generateShortURL] = request.body.longURL;   //longURL is ID in urls_new.ejs Form. Random String is Key, longURL is value.
+  const shortURL = generateRandomNum();  //Give me a random string
+  const longURL = request.body.longURL;
+  const user_id = request.cookies.user_id;
 
-  response.redirect("urls/" + generateShortURL);
+  urlDatabase[shortURL] = { userId: user_id, longURL: longURL };
+  response.redirect("urls/" + shortURL);
 });
-
-
 
 
   // UPDATE ENTRIES RESOURCE on Update Button in urls_show ************************
 
 app.post("/urls/:id/update", (request, response) => {
+  const user_id = request.cookies.user_id;
   const shortURLKey = request.params.id;
-  const newLongURL = request.body.longURL;
+  const longURL = request.body.longURL;
 
-  urlDatabase[shortURLKey] = newLongURL;
-  response.redirect("/urls/" + shortURLKey);
+  if (user_id === urlDatabase[shortURLKey].userId) {
+    urlDatabase[shortURLKey] = { userId: user_id, longURL: longURL }; // oiginal: newLongURL;  
+    response.redirect("/urls/" + shortURLKey);
+  } else {
+    return response.status(401).send("You do not have permission to access this resource");     
+  }
+});
+
+
+
+// LOGOUT/ CLEAR COOKIE and REDIRECT TO /URLS  ************************
+
+app.post("/urls/logout", (request, response) => {  
+  response.clearCookie("user_id");
+  response.redirect("/urls");
 });
 
 
   // DELETE ENTRIES RESOURCE on Delete Button ************************
 
 app.post("/urls/:id/delete", (request, response) => {
+  const user_id = request.cookies.user_id;
   const shortURLKey = request.params.id;
-  delete urlDatabase[shortURLKey];
-  response.redirect("/urls");
+
+  if (user_id === urlDatabase[shortURLKey].userId) {
+    delete urlDatabase[shortURLKey];
+    response.redirect("/urls");
+  } else {
+    return response.status(401).send("You do not have permission to access this resource");     
+  }
 });
 
 
