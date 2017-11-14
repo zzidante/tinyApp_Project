@@ -12,6 +12,7 @@
 
       <h1>Urls</h1>
         <p>Your shortened URL is: <%= shortURLKey %></p>
+        <p>Your shortened URL is: <a href="http://localhost:<%=PORT%>/u/<%= shortURLKey %>">http://localhost:<%=PORT%>/u/<%= shortURLKey %></a></p>
         <p>Your original URL is: <%= longURL.longURL %></p>
       <div></div>
 
@@ -28,3 +29,4 @@
       <% include partials/_footer %>      
   </body>
 </html>
+<!-- Changed short URL -->

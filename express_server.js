@@ -46,11 +46,12 @@ const urlDatabase = {
 
   // helper functions
 
-function generateRandomNum() {
+function generateRandomNum(num) {
+  let numberOfChars = num || 7;
   let shortURL = "";
   const allowedChar = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
 
-  for (let i = 0; i < 7; i++) {
+  for (let i = 0; i < numberOfChars; i++) {
     shortURL += allowedChar.charAt(Math.floor(Math.random() * allowedChar.length));
   };
   return shortURL;
@@ -110,6 +111,7 @@ function registerRouteResponse(email, password, randomId, response, request) {
 app.use((request, response, next) => {                        
   const user = users[request.session.user_id];
   response.locals.user = user;
+
   return next();
 }); 
 
@@ -123,12 +125,12 @@ app.get("/", (request, response) => {
   if (users[user_id]) {
     response.render("urls_index", templateVars);
   } else { 
-    response.redirect("/login");
+    response.redirect("register");
   }
 });
 
 
-app.get("/urls.json", (request, response) => {
+app.get("/urls.json", (request, response) => {  
   response.json(urlDatabase);
 });
 
@@ -182,7 +184,7 @@ app.get("/urls/:id", (request, response) => {
   const user_id = request.session.user_id;
   const shortURLKey = request.params.id;
   const longURL = urlDatabase[shortURLKey];
-  const templateVars = { "shortURLKey": shortURLKey, "longURL": longURL };
+  const templateVars = { "shortURLKey": shortURLKey, "longURL": longURL, "PORT": PORT };
 
   if (users[user_id]) {
     response.render("urls_show", templateVars);
@@ -194,8 +196,8 @@ app.get("/urls/:id", (request, response) => {
 
 app.get("/u/:shortURL", (request, response) => {
   let shortURLKey = request.params.shortURL;
-  let longURL = urlDatabase[shortURLKey].longURL;
-  response.redirect(longURL);
+  let matchedLongURL = urlDatabase[shortURLKey].longURL;
+  response.redirect(matchedLongURL);
 });
 
 
@@ -206,7 +208,6 @@ function hashPasswordMatch(userId, password) {
     return false;
   }
 };
-
 
 app.post("/login", (request, response) => {
   const email = request.body.email.trim();
@@ -261,7 +262,6 @@ app.post("/urls/:id/update", (request, response) => {
 
 
 app.post("/urls/logout", (request, response) => {  
-  // response.clearCookie("user_id");
   request.session = null;
   response.redirect("/urls");
 });

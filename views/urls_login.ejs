@@ -9,9 +9,6 @@
 <body>
 
   
-  
-
-  
   <% if (user === undefined) { %>
     <div class ="welcome-header">
       <h1>Welcome to TinyApp!</h1>
@@ -25,13 +22,10 @@
       <input name = "password" type = "password" placeholder = "password">
       <input type="submit" value="SUBMIT">
     </form>
+    <button onclick="location.href='/register'" type="button" class="button-register">
+      Or Register Here</button>  
   <% } else { %>
     <% include partials/_header %>    
-
-    <!-- <label for="login">Hey! Welcome <%= user.email %>.</label> 
-    <form method="POST" action="/urls/logout">
-      <button type=submit>logout</button>
-    </form> -->
   <% } %>
   
   </div>
