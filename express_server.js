@@ -46,6 +46,7 @@ const urlDatabase = {
 
   // helper functions
 
+  // generates random 7 character string. Can pass variable to custom number of random characters.
 function generateRandomNum(num) {
   let numberOfChars = num || 7;
   let shortURL = "";
