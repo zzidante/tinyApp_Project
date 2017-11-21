@@ -72,22 +72,33 @@ function getURLsForUser(user_id) {
 
 
 function giveEmail(email) {
-  for(let user in users) {
-    const currentUser = users[user];
-    if (currentUser.email === email) {
-      return currentUser.email;
+  for(let randomId in users) {
+    if (users[randomId].email === email) {
+      console.log("email from GIVEEMAIL func  ", email);
+      return email
+    } else { 
+      return false;
     }
-  };
+  }
 };
 
 function giveId(email) {
-  for(let user in users) {
-    const currentUser = users[user];
-    if (currentUser.email === email) {
-      return currentUser.id;
+  for(let randomId in users) {
+    if (users[randomId].email === email) {
+      return users[randomId].id;
     }
-  };
+  } 
 };
+
+function giveHashPassword(email) {
+  let matchedEmail = '';
+  for(let randomId in users) {
+    if (users[randomId].email === email) {
+      matchedEmail += users[randomId].hashedPassword.toString();
+    } 
+  };
+  return matchedEmail;
+}
 
 function registerRouteResponse(email, password, randomId, response, request) {
   if (email === "" || password === "" ) {
@@ -104,6 +115,7 @@ function registerRouteResponse(email, password, randomId, response, request) {
     users[randomId] = newUser;
     request.session.user_id = randomId;
     response.redirect("urls");
+    console.log("new user ", users[randomId]['email']);
   }
 };
 
@@ -202,22 +214,21 @@ app.get("/u/:shortURL", (request, response) => {
 });
 
 
-function hashPasswordMatch(userId, password) {
-  if (bcrypt.compareSync(password, users[userId].hashedPassword)) { 
-    return true;
-  } else {    
-    return false;
-  }
-};
-
 app.post("/login", (request, response) => {
+
   const email = request.body.email.trim();
-  const password = request.body.password;
-  const userId = giveId(email);
-  const verifyloginCredentials = hashPasswordMatch(userId, password);
+  const password = request.body.password.toString();
+
   if (email === "" || password === "" ) {
     return response.status(400).send("Fields can't be blank."); 
   } else {
+    
+    const userId = giveId(email);
+    console.log(email, password, userId);    
+    const hash = giveHashPassword(email);
+      console.log("giveHashPass Answer: ", hash);
+    const verifyloginCredentials = bcrypt.compareSync(password, hash);
+
     if (userId && verifyloginCredentials) { 
       request.session.user_id = userId;
       return response.redirect("urls");
@@ -230,9 +241,11 @@ app.post("/login", (request, response) => {
 app.post("/register", (request, response) => {
   const email = request.body.email.trim();      
   const password = request.body.password.trim();
-  const hashedPassword = bcrypt.hashSync(password, 10);
+  let hashedPassword = bcrypt.hashSync(password, 10);
   const randomId =  generateRandomNum();
   const user_id = request.session.user_id;
+
+  console.log("register: ", email, password, hashedPassword, randomId, user_id);
   
   registerRouteResponse(email, hashedPassword, randomId, response, request);
 });
