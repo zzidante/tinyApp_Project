@@ -74,7 +74,6 @@ function getURLsForUser(user_id) {
 function giveEmail(email) {
   for(let randomId in users) {
     if (users[randomId].email === email) {
-      console.log("email from GIVEEMAIL func  ", email);
       return email
     } else { 
       return false;
@@ -115,7 +114,6 @@ function registerRouteResponse(email, password, randomId, response, request) {
     users[randomId] = newUser;
     request.session.user_id = randomId;
     response.redirect("urls");
-    console.log("new user ", users[randomId]['email']);
   }
 };
 
@@ -224,9 +222,7 @@ app.post("/login", (request, response) => {
   } else {
     
     const userId = giveId(email);
-    console.log(email, password, userId);    
     const hash = giveHashPassword(email);
-      console.log("giveHashPass Answer: ", hash);
     const verifyloginCredentials = bcrypt.compareSync(password, hash);
 
     if (userId && verifyloginCredentials) { 
@@ -244,8 +240,6 @@ app.post("/register", (request, response) => {
   let hashedPassword = bcrypt.hashSync(password, 10);
   const randomId =  generateRandomNum();
   const user_id = request.session.user_id;
-
-  console.log("register: ", email, password, hashedPassword, randomId, user_id);
   
   registerRouteResponse(email, hashedPassword, randomId, response, request);
 });
