@@ -195,13 +195,16 @@ app.get("/urls/:id", (request, response) => {
   const user_id = request.session.user_id;
   const shortURLKey = request.params.id;
   const longURL = urlDatabase[shortURLKey];
-  const templateVars = { "shortURLKey": shortURLKey, "longURL": longURL, "PORT": PORT };
+  if (longURL) {
+    const templateVars = { "shortURLKey": shortURLKey, "longURL": longURL, "PORT": PORT };
 
-  if (users[user_id]) {
-    response.render("urls_show", templateVars);
-  } else {
-    return response.status(401).send("You do not have permission to access this resource");
-  };
+    if (users[user_id]) {
+      return response.render("urls_show", templateVars);
+    } else {
+      return response.status(401).send("You do not have permission to access this resource");
+    }
+  }
+    return response.status(404).send("This page does not exist")
 });
 
 
