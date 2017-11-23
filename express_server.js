@@ -207,8 +207,12 @@ app.get("/urls/:id", (request, response) => {
 
 app.get("/u/:shortURL", (request, response) => {
   let shortURLKey = request.params.shortURL;
-  let matchedLongURL = urlDatabase[shortURLKey].longURL;
-  response.redirect(matchedLongURL);
+  if (urlDatabase[shortURLKey]) {
+    let matchedLongURL = urlDatabase[shortURLKey].longURL;
+    response.redirect(matchedLongURL);
+  } else {
+      return response.status(404).send("This URL does not exist")
+    } 
 });
 
 

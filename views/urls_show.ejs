@@ -10,22 +10,25 @@
       <% include partials/_header %>
     </header>
 
-      <h1>Urls</h1>
-        <p>Your shortened URL is: <a href="http://localhost:<%=PORT%>/u/<%= shortURLKey %>">http://localhost:<%=PORT%>/u/<%= shortURLKey %></a></p>
-        <p>Your original URL is: <a href=<%= longURL.longURL %>><%=longURL.longURL%></a></p>
-      <div></div>
+        <h1>Urls</h1>
+          <p>Your shortened URL is: <a href="http://localhost:<%=PORT%>/u/<%= shortURLKey %>">http://localhost:<%=PORT%>/u/<%= shortURLKey %></a></p>
+          <p>Your original URL is: <a href=<%= longURL.longURL %>><%=longURL.longURL%></a></p>
+        <div></div>
 
-      <h2>UPDATE YOUR LINK</h2>
+        <h2>UPDATE YOUR LINK</h2>
 
-      <form method="POST" action="/urls/<%= shortURLKey %>/update">
-        <label for="longURL">Long URL</label>
-        <input type="text" name="longURL"/>
-        <input type="submit" value="UPDATE">
-      </form>
-      <div></div>
-      <a href = "/urls">Edit Current Links</a>
-      <div></div>
-      <% include partials/_footer %>      
+        <form method="POST" action="/urls/<%= shortURLKey %>/update">
+          <label for="longURL">Long URL</label>
+          <input type="text" name="longURL"/>
+          <input type="submit" value="UPDATE">
+        </form>
+        <div></div>
+        <a href = "/urls">Edit Current Links</a>
+        <div></div>
+        <h2>This URL does not exist</h2>
+        <button onclick="location.href='/urls/new'" type="button" class="button-new">Make a New Short URL</button>
+    <% include partials/_footer %>
+
   </body>
 </html>
 <!-- Changed short URL -->
